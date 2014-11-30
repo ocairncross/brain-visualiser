@@ -1,0 +1,13 @@
+13-11-2014 18:20:56 : indexed 10,000 tracks in 426ms
+13-11-2014 18:20:56 : loading roi's
+13-11-2014 18:20:57 : created ROI NC001_Amyg_L.nii with 308 tracks in 1,101ms
+13-11-2014 18:20:57 : created ROI NC001_Amyg_R.nii with 270 tracks in 20ms
+13-11-2014 18:20:57 : created ROI NC001_CC_Ant.nii with 100 tracks in 17ms
+13-11-2014 18:20:57 : created ROI NC001_CC_Central.nii with 81 tracks in 16ms
+13-11-2014 18:20:57 : created ROI NC001_CC_Mid_Ant.nii with 127 tracks in 19ms
+13-11-2014 18:20:57 : created ROI NC001_CC_Mid_Pos.nii with 78 tracks in 15ms
+13-11-2014 18:20:57 : created ROI NC001_CC_Pos.nii with 627 tracks in 14ms
+13-11-2014 18:20:57 : created ROI NC001_Hip_L.nii with 663 tracks in 17ms
+13-11-2014 18:20:57 : created ROI NC001_Hip_R.nii with 766 tracks in 17ms
+13-11-2014 18:20:57 : created ROI NC001_Tha_L.nii with 247 tracks in 16ms
+13-11-2014 18:20:57 : created ROI NC001_Tha_R.nii with 361 tracks in 18ms
