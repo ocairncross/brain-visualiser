@@ -9,6 +9,7 @@ import au.edu.uq.rcc.index.BrainIndex;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
@@ -67,6 +68,8 @@ public class FXMLController implements Initializable
     private Label targetLabel;
     @FXML
     private CheckBox clipPlane;
+    @FXML
+    private Label trackInfoLabel;
     
 
     /**
@@ -95,12 +98,9 @@ public class FXMLController implements Initializable
         mriCanvas.bindIntegerProperty(slider.valueProperty());
         slider.setValue(mriCanvas.getCurrentSlice());
         
-        tracks = new TrackCollection(trackSourceFile);
-        System.out.printf("loaded %d tracks\n", tracks.trackList.size());
-        trackCanvas = new TrackCanvas(mriCanvas.getCurrentSlice(), stackPane, brainMRI);
-        slider.valueProperty().addListener(trackCanvas);
-        
-        BrainIndex brainIndex = new BrainIndex(tracks,  brainMRI);
+        BrainIndex brainIndex = new BrainIndex(brainMRI);
+        tracks = new TrackCollection(trackSourceFile, brainIndex);        
+        trackCanvas = new TrackCanvas(stackPane, brainMRI, clipPlane, slider);
         
         MRISourceCollection mriSource = new MRISourceCollection(roiDirectory, brainIndex);
         List<RegionOfInterest> roiList = mriSource.getROIList();        
@@ -116,6 +116,9 @@ public class FXMLController implements Initializable
         slider.valueProperty().addListener(targetMaskCanvas);
         
         currentSlice.textProperty().bind(slider.valueProperty().asString());   
+        
+        
+        
     }
 
     @FXML
@@ -124,7 +127,8 @@ public class FXMLController implements Initializable
         if (roiTarget != null  && roiSource != null)
         {
             List<PartitionedTrack> partitionedTracks = roiSource.getPartitionedTracks(roiTarget);
-            trackCanvas.drawPartitionedTracks(partitionedTracks, clipPlane.isSelected());
+            trackCanvas.setPartitionedTrack(partitionedTracks);
+            setTrackInfo(partitionedTracks);
         }
     }
     
@@ -133,8 +137,9 @@ public class FXMLController implements Initializable
     {
         if (roiTarget != null  && roiSource != null)
         {
-            List<Track> partitionedTracks = roiSource.getCommonTracks(roiTarget);
-            trackCanvas.drawTracks(partitionedTracks, clipPlane.isSelected());
+            List<Track> intersectionTracks = roiSource.getCommonTracks(roiTarget);
+            trackCanvas.setTrack(intersectionTracks);
+            setTrackInfo(intersectionTracks);
         }
     }
 
@@ -158,41 +163,56 @@ public class FXMLController implements Initializable
         targetLabel.textProperty().set(label);
     }
 
+    private void setTrackInfo(Collection c)
+    {
+        trackInfoLabel.setText("total tracks " + c.size());
+    }
+    
     @FXML
     private void sourceTracks(ActionEvent event)
     {
-        trackCanvas.drawTracks(new ArrayList<>(roiSource.getTracks()), clipPlane.isSelected());
+        ArrayList a = new ArrayList<>(roiSource.getTracks());
+        trackCanvas.setTrack(a);
+        setTrackInfo(a);
     }
 
     @FXML
     private void targetTracks(ActionEvent event)
     {
-        trackCanvas.drawTracks(new ArrayList<>(roiTarget.getTracks()), clipPlane.isSelected());
+        ArrayList a = new ArrayList<>(roiTarget.getTracks());
+        trackCanvas.setTrack(a);
+        setTrackInfo(a);
     }
 
     @FXML
     private void sourceCloseTracks(ActionEvent event)
     {
-        trackCanvas.drawTracks(new ArrayList<>(roiSource.getCloseTracks(30)), clipPlane.isSelected());
+        ArrayList a = new ArrayList<>(roiSource.getCloseTracks(30));
+        trackCanvas.setTrack(a);
+        setTrackInfo(a);
     }
 
     @FXML
     private void targetCloseTracks(ActionEvent event)
     {
-        trackCanvas.drawTracks(new ArrayList<>(roiTarget.getCloseTracks(30)), clipPlane.isSelected());
+        ArrayList a = new ArrayList<>(roiTarget.getCloseTracks(30));
+        trackCanvas.setTrack(a);
+        setTrackInfo(a);
     }
 
     @FXML
     private void showAllTracks(ActionEvent event)
     {
-        trackCanvas.drawTracks(tracks.trackList, clipPlane.isSelected());
+        trackCanvas.setTrack(tracks.getTrackList());
+        setTrackInfo(tracks.getTrackList());
     }
 
     @FXML
     private void showMrtrixTracks(ActionEvent event)
-    {
+    {        
         TrackCollection mrTracks = new TrackCollection(mrtrixTrackFile);
-        trackCanvas.drawTracks(mrTracks.trackList, clipPlane.isSelected());
+        trackCanvas.setTrack(mrTracks.getTrackList());
+        setTrackInfo(mrTracks.getTrackList()); 
     }
     
 }

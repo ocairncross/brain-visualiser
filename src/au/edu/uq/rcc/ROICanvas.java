@@ -81,9 +81,9 @@ public class ROICanvas implements ChangeListener<Number>
                 for (int k = 0; k < dim.z; k++)
                 {
                     if (roi.getRoiMask()[i][j][k] && k == currentSlice)
-                    {
-                        // gc.fillOval(i * scale, (dim.y - j) * scale, scale, scale);
-                        gc.strokeOval(i * scale, (dim.y - j) * scale, scale, scale);
+                    {                        
+                        // gc.strokeOval((i - 0.5) * scale, (dim.y - (j - 0.5)) * scale, scale, scale);
+                        gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
                     }
                 }
             }
