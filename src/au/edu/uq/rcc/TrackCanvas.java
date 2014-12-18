@@ -6,7 +6,6 @@
 package au.edu.uq.rcc;
 
 import java.util.List;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -36,10 +35,12 @@ public class TrackCanvas
     private final Pane pane;
     private final CheckBox clipPlane;
     private double scale = 1.0;
-    private Tuple3i dim;
+    private final Tuple3i dim;
 
-    private List<Track> trackList = null;
-    private List<PartitionedTrack> partitionedTrackList = null;
+    private TrackProvider trackProvider = null;
+    
+    // private List<Track> trackList = null;    
+    // private List<PartitionedTrack> partitionedTrackList = null;
 
     public TrackCanvas(Pane pane, MRISource mri, CheckBox clipPane, Slider slider)
     {
@@ -72,28 +73,25 @@ public class TrackCanvas
         
     }
 
-    public void setTrack(List<Track> trackList)
+    public void setTrack(TrackProvider trackProvider)
     {
-        this.trackList = trackList;
-        partitionedTrackList = null;
+        this.trackProvider = trackProvider;
         draw();
     }
 
     public void setPartitionedTrack(List<PartitionedTrack> partitionedTrackList)
-    {
-        this.partitionedTrackList = partitionedTrackList;
-        trackList = null;
-        draw();
+    {        
     }
 
     private void draw()
     {
-        if (trackList != null)
+        if (trackProvider != null)
         {
-            drawTracks(trackList);
-        } else if (partitionedTrackList != null)
+            drawTracks(trackProvider);
+        }
+        else
         {
-            drawPartitionedTracks(partitionedTrackList);
+            clearTracks();
         }
     }
 
@@ -119,9 +117,16 @@ public class TrackCanvas
         canvas.setHeight(s);
         scale = s / dim.x;
     }
-
-    private void drawTracks(List<Track> trackList)
+    
+    private void clearTracks()
     {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    }
+
+    private void drawTracks(TrackProvider trackProvider)
+    {
+        List<Track> trackList = trackProvider.getTrackList();
         GraphicsContext gc = canvas.getGraphicsContext2D();
         double s = canvas.getWidth() < canvas.getHeight() ? canvas.getWidth() : canvas.getHeight();
         scale = s / dim.x;
@@ -134,14 +139,12 @@ public class TrackCanvas
             for (int j = 0; j < track.numberOfVertices() - 1; j++)
             {
                 Tuple3d p0 = track.getVertices().get(j);
-                Tuple3d p1 = track.getVertices().get(j + 1);
-                p0 = mri.undoTransform(p0);
+                Tuple3d p1 = track.getVertices().get(j + 1);                
                 // Change voxel origin.
                 if (clipPlane.isSelected() && (p0.z < currentSlice - 0.5 || p0.z > currentSlice + 0.5))
                 {
                     continue;
-                }
-                p1 = mri.undoTransform(p1);
+                }                
                 gc.setStroke(getColor(p0, p1));
                 gc.strokeLine(p0.x * scale, height - p0.y * scale, p1.x * scale, height - p1.y * scale);
             }
@@ -164,13 +167,11 @@ public class TrackCanvas
                                 for (int j = ti.getStart(); j < ti.getEnd() - 1; j++)
                                 {
                                     Tuple3d p0 = ti.getTrack().getVertices().get(j);
-                                    Tuple3d p1 = ti.getTrack().getVertices().get(j + 1);
-                                    p0 = mri.undoTransform(p0);
+                                    Tuple3d p1 = ti.getTrack().getVertices().get(j + 1);                                    
                                     if (clipPlane.isSelected() && (p0.z < currentSlice - 1 || p0.z > currentSlice + 2))
                                     {
                                         continue;
-                                    }
-                                    p1 = mri.undoTransform(p1);
+                                    }                                    
                                     gc.setStroke(getColor(p0, p1));
                                     gc.strokeLine(p0.x * scale, height - p0.y * scale, p1.x * scale, height - p1.y * scale);
                                 }

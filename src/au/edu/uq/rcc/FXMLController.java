@@ -6,6 +6,7 @@
 package au.edu.uq.rcc;
 
 import au.edu.uq.rcc.index.BrainIndex;
+
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -17,13 +18,21 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javax.vecmath.Tuple3i;
 
 /**
@@ -37,11 +46,13 @@ public class FXMLController implements Initializable
     File root = new File("/media/oliver/A066DA6266DA392C/projects/brain/human/NC001");
     File mriSouceFile = new File(root, "bet/NC001_convert_eddy_Ave_nodif.nii");
     File trackSourceFile = new File(root, "mrtrix/NC001_whole_brain_DT_STREAM.tck");
-    File mrtrixTrackFile = new File(root, "mrtrix/out.tck");
+    File mrtrixTrackFile = new File(root, "mrtrix/Amyg_L-Amyg_R.tck");
     File roiDirectory = new File(root,"roi");
     
     File roiSourceFile = new File(root, "flirt/NC001_Amyg_L.nii");
     File roiTargetFile = new File(root, "flirt/NC001_Amyg_R.nii");
+    
+    MRISource brainMRI;
     
     TrackCanvas trackCanvas;
     ROICanvas sourceMaskCanvas;
@@ -57,19 +68,12 @@ public class FXMLController implements Initializable
     @FXML
     private Slider slider;
     @FXML
-    private Label currentSlice;
-    @FXML
-    private ComboBox<RegionOfInterest> sourceCombo;
-    @FXML
-    private ComboBox<RegionOfInterest> targetCombo;
-    @FXML
-    private Label sourceLabel;
-    @FXML
-    private Label targetLabel;
+    private Label currentSlice;    
     @FXML
     private CheckBox clipPlane;
     @FXML
-    private Label trackInfoLabel;
+    private VBox toolPanel;
+    
     
 
     /**
@@ -89,8 +93,8 @@ public class FXMLController implements Initializable
         imageView.fitWidthProperty().bind(stackPane.widthProperty());
         stackPane.getChildren().add(imageView);
         
-        MRISource brainMRI = new MRISource(mriSouceFile);
-        MRICanvas mriCanvas = new MRICanvas(brainMRI, imageView); 
+        brainMRI = new MRISource(mriSouceFile);
+        MRICanvas mriCanvas = new MRICanvas(brainMRI, imageView);
         dim = brainMRI.getDimensions();
 
         slider.setMin(0);
@@ -99,120 +103,61 @@ public class FXMLController implements Initializable
         slider.setValue(mriCanvas.getCurrentSlice());
         
         BrainIndex brainIndex = new BrainIndex(brainMRI);
-        tracks = new TrackCollection(trackSourceFile, brainIndex);        
+        
+        tracks = new TrackCollection(trackSourceFile, brainMRI.getTransform());        
         trackCanvas = new TrackCanvas(stackPane, brainMRI, clipPlane, slider);
         
         MRISourceCollection mriSource = new MRISourceCollection(roiDirectory, brainIndex);
         List<RegionOfInterest> roiList = mriSource.getROIList();        
         ObservableList<RegionOfInterest> observableArrayList = FXCollections.observableArrayList(roiList);
-        sourceCombo.setItems(observableArrayList);
-        targetCombo.setItems(observableArrayList);
-        
-        sourceMaskCanvas = new ROICanvas(mriCanvas.getCurrentSlice(), stackPane);
-        slider.valueProperty().addListener(sourceMaskCanvas);
-        
-        targetMaskCanvas = new ROICanvas(mriCanvas.getCurrentSlice(), stackPane);
+                
+        sourceMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
+        targetMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
         targetMaskCanvas.setColor(Color.RED);
-        slider.valueProperty().addListener(targetMaskCanvas);
+                
+        currentSlice.textProperty().bind(slider.valueProperty().asString("%2.2f"));
         
-        currentSlice.textProperty().bind(slider.valueProperty().asString());   
+        TrackProviderUI trackProviderUI = new TrackProviderUI(toolPanel);
+        TrackSourceManager trackSourceManager = new TrackSourceManager(trackCanvas, trackProviderUI);
         
+        TrackCollection trackCollection1 = new TrackCollection(trackSourceFile, brainMRI.getTransform());
+        TrackCollection trackCollection2 = new TrackCollection(mrtrixTrackFile, brainMRI.getTransform());
+        trackSourceManager.addTrackProvider(trackCollection1);
+        trackSourceManager.addTrackProvider(trackCollection2);
         
         
     }
 
-    @FXML
-    private void trackAction(ActionEvent event)
+
+    private void loadMRT(ActionEvent event)
     {
-        if (roiTarget != null  && roiSource != null)
-        {
-            List<PartitionedTrack> partitionedTracks = roiSource.getPartitionedTracks(roiTarget);
-            trackCanvas.setPartitionedTrack(partitionedTracks);
-            setTrackInfo(partitionedTracks);
-        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Track File");
+        fileChooser.setInitialDirectory(root);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("tracks", "*.tck"));        
+        File file = fileChooser.showOpenDialog(BrainVisualiser.stage);        
+        TrackCollection mrTracks = new TrackCollection(file, brainMRI.getTransform());  
+        // trackCanvas.setTrack(mrTracks.getTrackList());        
     }
     
-    @FXML
-    private void trackIntersection(ActionEvent event)
+    TrackComparator comparator;
+    private List<Track> trackList1;
+    private List<Track> trackList2;
+
+    private void loadTrack2(ActionEvent event)
     {
-        if (roiTarget != null  && roiSource != null)
-        {
-            List<Track> intersectionTracks = roiSource.getCommonTracks(roiTarget);
-            trackCanvas.setTrack(intersectionTracks);
-            setTrackInfo(intersectionTracks);
-        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Track File");
+        fileChooser.setInitialDirectory(root);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("tracks", "*.tck"));        
+        File file = fileChooser.showOpenDialog(BrainVisualiser.stage);        
+        trackList2 = new TrackCollection(file, brainMRI.getTransform()).getTrackList();        
+        comparator = new TrackComparator(trackList1, trackList2);
+        System.out.printf("common: %d, track1: %d, track2 %d", 
+                comparator.getSameTracks().size(),
+                comparator.getFirstTracks().size(),
+                comparator.getSecondTracks().size());
     }
 
-    @FXML
-    private void sourceAction(ActionEvent event)
-    {
-        ComboBox source = (ComboBox) event.getSource();        
-        roiSource = (RegionOfInterest) source.getValue();
-        sourceMaskCanvas.setROI(roiSource);
-        String label = String.format("Faces: %d, tracks %d\n", roiSource.getFaces().size(), roiSource.numberOfTracks());
-        sourceLabel.textProperty().set(label);        
-    }
-
-    @FXML
-    private void targetAction(ActionEvent event)
-    {
-        ComboBox source = (ComboBox) event.getSource();
-        roiTarget = (RegionOfInterest) source.getValue();
-        targetMaskCanvas.setROI(roiTarget);
-        String label = String.format("Faces: %d, tracks %d\n", roiTarget.getFaces().size(), roiTarget.numberOfTracks());
-        targetLabel.textProperty().set(label);
-    }
-
-    private void setTrackInfo(Collection c)
-    {
-        trackInfoLabel.setText("total tracks " + c.size());
-    }
-    
-    @FXML
-    private void sourceTracks(ActionEvent event)
-    {
-        ArrayList a = new ArrayList<>(roiSource.getTracks());
-        trackCanvas.setTrack(a);
-        setTrackInfo(a);
-    }
-
-    @FXML
-    private void targetTracks(ActionEvent event)
-    {
-        ArrayList a = new ArrayList<>(roiTarget.getTracks());
-        trackCanvas.setTrack(a);
-        setTrackInfo(a);
-    }
-
-    @FXML
-    private void sourceCloseTracks(ActionEvent event)
-    {
-        ArrayList a = new ArrayList<>(roiSource.getCloseTracks(30));
-        trackCanvas.setTrack(a);
-        setTrackInfo(a);
-    }
-
-    @FXML
-    private void targetCloseTracks(ActionEvent event)
-    {
-        ArrayList a = new ArrayList<>(roiTarget.getCloseTracks(30));
-        trackCanvas.setTrack(a);
-        setTrackInfo(a);
-    }
-
-    @FXML
-    private void showAllTracks(ActionEvent event)
-    {
-        trackCanvas.setTrack(tracks.getTrackList());
-        setTrackInfo(tracks.getTrackList());
-    }
-
-    @FXML
-    private void showMrtrixTracks(ActionEvent event)
-    {        
-        TrackCollection mrTracks = new TrackCollection(mrtrixTrackFile);
-        trackCanvas.setTrack(mrTracks.getTrackList());
-        setTrackInfo(mrTracks.getTrackList()); 
-    }
     
 }
