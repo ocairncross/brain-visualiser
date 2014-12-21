@@ -10,8 +10,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -27,7 +25,7 @@ import javafx.scene.paint.Color;
  *
  * @author oliver
  */
-public class TrackProviderUI
+public class ROIUI
 {
 
     Pane pane;
@@ -37,14 +35,14 @@ public class TrackProviderUI
     BorderStroke bs = new BorderStroke(Color.GREY, BorderStrokeStyle.SOLID, ci, bw);
     Border border = new Border(bs);
     
-    public TrackProviderUI(Pane pane)
+    public ROIUI(Pane pane)
     {
         this.pane = pane;
         stack = new VBox();
         stack.setPadding(new Insets(5.0));
         stack.setSpacing(3.0);
         stack.setBorder(border);
-        Label titleLabel = new Label("Track Source");
+        Label titleLabel = new Label("ROI");
         titleLabel.setAlignment(Pos.CENTER);        
         titleLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
@@ -52,7 +50,7 @@ public class TrackProviderUI
         pane.getChildren().add(stack);
     }
 
-    public BooleanProperty addSource(TrackProvider trackProvider)
+    public BooleanProperty addSource(RegionOfInterest roi)
     {
         VBox vBox = new VBox();
         HBox hBox = new HBox();
@@ -63,10 +61,10 @@ public class TrackProviderUI
         vBox.setPadding(new Insets(5.0));
         vBox.setBorder(border);
 
-        labelSource.setText(trackProvider.getName());
+        labelSource.setText(roi.getName());
         labelSource.setMaxWidth(Double.MAX_VALUE);
 
-        labelInfo.setText("tracks: " + trackProvider.getTrackList().size());
+        labelInfo.setText("tracks: " + roi.getTracks().size());
 
         HBox.setHgrow(labelSource, Priority.ALWAYS);
         hBox.getChildren().addAll(labelSource, checkBox);

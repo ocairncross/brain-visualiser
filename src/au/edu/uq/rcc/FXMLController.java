@@ -91,6 +91,8 @@ public class FXMLController implements Initializable
         imageView.setPreserveRatio(true);        
         imageView.fitHeightProperty().bind(stackPane.heightProperty());
         imageView.fitWidthProperty().bind(stackPane.widthProperty());
+        
+        
         stackPane.getChildren().add(imageView);
         
         brainMRI = new MRISource(mriSouceFile);
@@ -102,17 +104,19 @@ public class FXMLController implements Initializable
         mriCanvas.bindIntegerProperty(slider.valueProperty());
         slider.setValue(mriCanvas.getCurrentSlice());
         
-        BrainIndex brainIndex = new BrainIndex(brainMRI);
         
         tracks = new TrackCollection(trackSourceFile, brainMRI.getTransform());        
         trackCanvas = new TrackCanvas(stackPane, brainMRI, clipPlane, slider);
         
+        BrainIndex brainIndex = new BrainIndex(tracks, brainMRI);
+        
         MRISourceCollection mriSource = new MRISourceCollection(roiDirectory, brainIndex);
-        List<RegionOfInterest> roiList = mriSource.getROIList();        
+        List<RegionOfInterest> roiList = mriSource.getROIList();
         ObservableList<RegionOfInterest> observableArrayList = FXCollections.observableArrayList(roiList);
                 
-        sourceMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
-        targetMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
+        // sourceMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
+        // targetMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
+        
         targetMaskCanvas.setColor(Color.RED);
                 
         currentSlice.textProperty().bind(slider.valueProperty().asString("%2.2f"));
@@ -125,6 +129,9 @@ public class FXMLController implements Initializable
         trackSourceManager.addTrackProvider(trackCollection1);
         trackSourceManager.addTrackProvider(trackCollection2);
         
+        ROIUI roiUI = new ROIUI(toolPanel);
+        roiList.forEach(roiUI::addSource);
+        // roiUI.addSource(roiList.get(0));
         
     }
 

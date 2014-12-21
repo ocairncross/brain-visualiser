@@ -38,11 +38,9 @@ public class TrackSourceManager implements ChangeListener<Boolean>
 
     @Override
     public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-    {
-        System.out.printf("%s\n", observable.toString());
+    {        
         if (observable.getValue() == true)
-        {
-            System.out.printf("Setting others to false\n");
+        {     
             trackProviders.keySet()
                     .stream()
                     .filter(b -> !b.equals(observable) && b.getValue() == true)

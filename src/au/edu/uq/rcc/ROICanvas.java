@@ -5,6 +5,8 @@
  */
 package au.edu.uq.rcc;
 
+import java.util.HashSet;
+import java.util.Set;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
@@ -22,18 +24,21 @@ public class ROICanvas
 
     private int currentSlice;
     private final Canvas canvas;
-    private final Pane pane;
-    private RegionOfInterest roi;
+    private final Pane pane;    
     private Color color = Color.YELLOW;
-    private final CheckBox clipPlane;
-    private boolean[][] roiMask;
+    private final CheckBox clipPlane;    
+    private final Tuple3i dim;
+    private Set<RenderableROI> roiList = new HashSet<>();
+    private GraphicsContext gc;
 
-    public ROICanvas(Pane pane, CheckBox clipPlane, Slider slider)
+    public ROICanvas(Pane pane, CheckBox clipPlane, Slider slider, Tuple3i dim)
     {
         this.currentSlice = (int) slider.getValue();
         this.pane = pane;
         this.clipPlane = clipPlane;
+        this.dim = dim;
         canvas = new Canvas(pane.getWidth(), pane.getHeight());
+        gc = canvas.getGraphicsContext2D();
         pane.getChildren().add(canvas);
 
         clipPlane.selectedProperty().addListener((ob, o, n) -> draw());
@@ -51,28 +56,17 @@ public class ROICanvas
         pane.heightProperty().addListener((ob, o, n) -> draw());
 
     }
-
-    public void setROI(RegionOfInterest roi)
-    {
-        this.roi = roi;
-        Tuple3i dim = roi.getDimensions();
-        roiMask = new boolean[dim.x][dim.y];
-        for (int i = 0; i < dim.x; i++)
-        {
-            for (int j = 0; j < dim.y; j++)
-            {
-                for (int k = 0; k < dim.z; k++)
-                {
-                    if (roi.getRoiMask()[i][j][k])
-                    {
-                        roiMask[i][j] = true;
-                    }
-                }
-            }
-        }
-        draw();
+    
+    public void addROI(RenderableROI roi)
+    {        
+        roiList.add(roi);
     }
-
+    
+    public void removeROI(RenderableROI roi)
+    {
+        roiList.remove(roi);
+    }
+    
     public void setColor(Color c)
     {
         this.color = c;
@@ -84,10 +78,9 @@ public class ROICanvas
     }
 
     public final void draw()
-    {
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+    {        
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        if (roi == null)
+        if (roiList.isEmpty())
         {
             return;
         }
@@ -95,23 +88,33 @@ public class ROICanvas
         double side = pane.getWidth() < pane.getHeight() ? pane.getWidth() : pane.getHeight();
         canvas.setWidth(side);
         canvas.setHeight(side);
-        double scale = side / roi.getDimensions().x;
-        Tuple3i dim = roi.getDimensions();
+        double scale = side / dim.x;        
         for (int i = 0; i < dim.x; i++)
         {
             for (int j = 0; j < dim.y; j++)
             {
-                if (roi.getRoiMask()[i][j][currentSlice])
+                for (RenderableROI r : roiList)
                 {
-                    gc.setFill(color);
-                    gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
-                }
-                else if (!clipPlane.isSelected() && roiMask[i][j])
-                {
-                    gc.setFill(color.darker());
-                    gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
+                    if (r.isVisible().getValue())
+                    {
+                        paintROI(r, i, j, scale);
+                    }
                 }                
             }
+        }
+    }
+
+    private void paintROI(RenderableROI renderableROI, int i, int j, double scale)
+    {
+        if (renderableROI.isVoxel(i, j, currentSlice))
+        {
+            gc.setFill(color);
+            gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
+        }
+        else if (!clipPlane.isSelected() && renderableROI.isOutline(i, j))
+        {
+            gc.setFill(color.darker());
+            gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
         }
     }
 }
