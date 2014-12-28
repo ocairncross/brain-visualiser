@@ -64,7 +64,7 @@ public class ROIManager implements ChangeListener<Boolean>
             roiCanvas.removeROI(renderableROIs.get(observable));      
             if (trackManager != null)
             {
-                trackManager.addTrackProvider(renderableROIs.get(observable));
+                trackManager.removeTrackProvider(renderableROIs.get(observable));                               
             }
         }
     }

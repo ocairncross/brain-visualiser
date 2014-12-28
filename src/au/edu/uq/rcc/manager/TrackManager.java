@@ -38,6 +38,11 @@ public class TrackManager implements ChangeListener<Boolean>
         boolProp.addListener(this);        
         trackProviders.put(boolProp, trackProvider);
     }
+    
+    public void removeTrackProvider(TrackProvider trackProvider)
+    {
+        trackProviderUI.removeSource(trackProvider);        
+    }
 
     @Override
     public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)

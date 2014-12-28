@@ -5,13 +5,14 @@
  */
 package au.edu.uq.rcc;
 
+import java.util.HashMap;
+import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -36,6 +37,7 @@ public class TrackUI
     CornerRadii ci = new CornerRadii(5);
     BorderStroke bs = new BorderStroke(Color.GREY, BorderStrokeStyle.SOLID, ci, bw);
     Border border = new Border(bs);
+    Map<TrackProvider, Node> providerMap = new HashMap<>();
     
     public TrackUI(Pane pane)
     {
@@ -51,6 +53,11 @@ public class TrackUI
         stack.getChildren().add(titleLabel);
         pane.getChildren().add(stack);
     }
+    
+    public void removeSource(TrackProvider trackProvider)
+    {
+        stack.getChildren().remove(providerMap.get(trackProvider));
+    }
 
     public BooleanProperty addSource(TrackProvider trackProvider)
     {
@@ -65,17 +72,17 @@ public class TrackUI
 
         labelSource.setText(trackProvider.getName());
         labelSource.setMaxWidth(Double.MAX_VALUE);
-
         labelInfo.setText("tracks: " + trackProvider.getTrackList().size());
 
         HBox.setHgrow(labelSource, Priority.ALWAYS);
         hBox.getChildren().addAll(labelSource, checkBox);
-
         vBox.getChildren().add(hBox);
         vBox.getChildren().add(labelInfo);
 
         stack.getChildren().add(vBox);
 
+        providerMap.put(trackProvider, vBox);
+        
         return checkBox.selectedProperty();
     }
 

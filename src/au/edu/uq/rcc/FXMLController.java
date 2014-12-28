@@ -88,16 +88,20 @@ public class FXMLController implements Initializable
         });
 
         MRICanvas mriCanvas = new MRICanvas(this, brainMRI);
-
         ROIManager roiManager = initialiseROI(dim, brainIndex);
 
         TrackCanvas trackCanvas = new TrackCanvas(this, dim);
         TrackUI trackUI = new TrackUI(toolPanel);
 
         TrackManager trackManager = new TrackManager(trackCanvas, trackUI);
+        roiManager.setTrackManager(trackManager);
+        
         TrackCollection tracksMRTRX = new TrackCollection(mrtrixTrackFile, brainMRI.getTransform());
         trackManager.addTrackProvider(tracksAll);
         trackManager.addTrackProvider(tracksMRTRX);
+        
+        
+        
 
     }
 
