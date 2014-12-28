@@ -5,35 +5,26 @@
  */
 package au.edu.uq.rcc;
 
+import au.edu.uq.rcc.manager.TrackManager;
+import au.edu.uq.rcc.canvas.TrackCanvas;
+import au.edu.uq.rcc.canvas.ROICanvas;
+import au.edu.uq.rcc.canvas.MRICanvas;
 import au.edu.uq.rcc.index.BrainIndex;
+import au.edu.uq.rcc.manager.ROIManager;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.ResourceBundle;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.stage.FileChooser;
 import javax.vecmath.Tuple3i;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * FXML Controller class
@@ -43,128 +34,105 @@ import javax.vecmath.Tuple3i;
 public class FXMLController implements Initializable
 {
 
+    public static int DISPLAY_MAX_TRACKS = 1000;
+
     File root = new File("/media/oliver/A066DA6266DA392C/projects/brain/human/NC001");
     File mriSouceFile = new File(root, "bet/NC001_convert_eddy_Ave_nodif.nii");
     File trackSourceFile = new File(root, "mrtrix/NC001_whole_brain_DT_STREAM.tck");
     File mrtrixTrackFile = new File(root, "mrtrix/Amyg_L-Amyg_R.tck");
-    File roiDirectory = new File(root,"roi");
-    
+    File roiDirectory = new File(root, "roi");
+
     File roiSourceFile = new File(root, "flirt/NC001_Amyg_L.nii");
     File roiTargetFile = new File(root, "flirt/NC001_Amyg_R.nii");
-    
-    MRISource brainMRI;
-    
-    TrackCanvas trackCanvas;
-    ROICanvas sourceMaskCanvas;
-    ROICanvas targetMaskCanvas;
-    
-    List<PartitionedTrack> segments;
-    TrackCollection tracks;
-    RegionOfInterest roiSource;
-    RegionOfInterest roiTarget;
-    
+
     @FXML
     private StackPane stackPane;
     @FXML
     private Slider slider;
     @FXML
-    private Label currentSlice;    
+    private Label currentSlice;
     @FXML
     private CheckBox clipPlane;
     @FXML
     private VBox toolPanel;
-    
-    
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        
-        Tuple3i dim;
-        
-        ImageView imageView = new ImageView();
-        imageView.setPreserveRatio(true);        
-        imageView.fitHeightProperty().bind(stackPane.heightProperty());
-        imageView.fitWidthProperty().bind(stackPane.widthProperty());
-        
-        
-        stackPane.getChildren().add(imageView);
-        
-        brainMRI = new MRISource(mriSouceFile);
-        MRICanvas mriCanvas = new MRICanvas(brainMRI, imageView);
-        dim = brainMRI.getDimensions();
+        // Init fastmath - this will load tables.    
+        FastMath.sqrt(Math.PI);
 
-        slider.setMin(0);
-        slider.setMax(dim.z - 1);        
-        mriCanvas.bindIntegerProperty(slider.valueProperty());
-        slider.setValue(mriCanvas.getCurrentSlice());
-        
-        
-        tracks = new TrackCollection(trackSourceFile, brainMRI.getTransform());        
-        trackCanvas = new TrackCanvas(stackPane, brainMRI, clipPlane, slider);
-        
-        BrainIndex brainIndex = new BrainIndex(tracks, brainMRI);
-        
-        MRISourceCollection mriSource = new MRISourceCollection(roiDirectory, brainIndex);
-        List<RegionOfInterest> roiList = mriSource.getROIList();
-        ObservableList<RegionOfInterest> observableArrayList = FXCollections.observableArrayList(roiList);
-                
-        // sourceMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
-        // targetMaskCanvas = new ROICanvas(stackPane, clipPlane, slider);
-        
-        targetMaskCanvas.setColor(Color.RED);
-                
-        currentSlice.textProperty().bind(slider.valueProperty().asString("%2.2f"));
-        
-        TrackProviderUI trackProviderUI = new TrackProviderUI(toolPanel);
-        TrackSourceManager trackSourceManager = new TrackSourceManager(trackCanvas, trackProviderUI);
-        
-        TrackCollection trackCollection1 = new TrackCollection(trackSourceFile, brainMRI.getTransform());
-        TrackCollection trackCollection2 = new TrackCollection(mrtrixTrackFile, brainMRI.getTransform());
-        trackSourceManager.addTrackProvider(trackCollection1);
-        trackSourceManager.addTrackProvider(trackCollection2);
-        
+        MRISource brainMRI = new MRISource(mriSouceFile);
+        Tuple3i dim = brainMRI.getDimensions();
+        TrackCollection tracksAll = new TrackCollection(trackSourceFile, brainMRI.getTransform());
+        BrainIndex brainIndex = new BrainIndex(tracksAll, brainMRI);
+
+        initializeSlider(dim);
+
+        stackPane.setOnScroll((ScrollEvent s) ->
+        {
+            System.out.printf("Scroll %s\n", s.toString());
+            if (s.getDeltaY() < 0)
+            {
+                slider.adjustValue(slider.getValue() - 1);
+            } else
+            {
+                slider.adjustValue(slider.getValue() + 1);
+            }
+        });
+
+        MRICanvas mriCanvas = new MRICanvas(this, brainMRI);
+
+        ROIManager roiManager = initialiseROI(dim, brainIndex);
+
+        TrackCanvas trackCanvas = new TrackCanvas(this, dim);
+        TrackUI trackUI = new TrackUI(toolPanel);
+
+        TrackManager trackManager = new TrackManager(trackCanvas, trackUI);
+        TrackCollection tracksMRTRX = new TrackCollection(mrtrixTrackFile, brainMRI.getTransform());
+        trackManager.addTrackProvider(tracksAll);
+        trackManager.addTrackProvider(tracksMRTRX);
+
+    }
+
+    // Load ROI's from source directory and generate tracks using index.
+    private ROIManager initialiseROI(Tuple3i dim, BrainIndex brainIndex)
+    {
+        ROISourceCollection mriSource = new ROISourceCollection(roiDirectory, brainIndex);
+        ROICanvas roiCanvas = new ROICanvas(this, dim);
         ROIUI roiUI = new ROIUI(toolPanel);
-        roiList.forEach(roiUI::addSource);
-        // roiUI.addSource(roiList.get(0));
-        
+        ROIManager roiManager = new ROIManager(roiCanvas, roiUI);
+        mriSource.getROIList().forEach(roiManager::addROI);
+        return roiManager;
     }
 
-
-    private void loadMRT(ActionEvent event)
+    private void initializeSlider(Tuple3i dim)
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Track File");
-        fileChooser.setInitialDirectory(root);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("tracks", "*.tck"));        
-        File file = fileChooser.showOpenDialog(BrainVisualiser.stage);        
-        TrackCollection mrTracks = new TrackCollection(file, brainMRI.getTransform());  
-        // trackCanvas.setTrack(mrTracks.getTrackList());        
+        slider.setMin(0);
+        slider.setMax(dim.z - 1);
+        slider.setValue((int) dim.z / 2);
+        currentSlice.textProperty().bind(slider.valueProperty().asString("%2.2f"));
     }
-    
-    TrackComparator comparator;
-    private List<Track> trackList1;
-    private List<Track> trackList2;
 
-    private void loadTrack2(ActionEvent event)
+    public Slider getSlider()
     {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open Track File");
-        fileChooser.setInitialDirectory(root);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("tracks", "*.tck"));        
-        File file = fileChooser.showOpenDialog(BrainVisualiser.stage);        
-        trackList2 = new TrackCollection(file, brainMRI.getTransform()).getTrackList();        
-        comparator = new TrackComparator(trackList1, trackList2);
-        System.out.printf("common: %d, track1: %d, track2 %d", 
-                comparator.getSameTracks().size(),
-                comparator.getFirstTracks().size(),
-                comparator.getSecondTracks().size());
+        return slider;
     }
 
-    
+    public CheckBox getClipPlane()
+    {
+        return clipPlane;
+    }
+
+    public StackPane getStackPane()
+    {
+        return stackPane;
+    }
+
 }

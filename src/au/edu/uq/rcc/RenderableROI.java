@@ -5,24 +5,30 @@
  */
 package au.edu.uq.rcc;
 
-import java.awt.Color;
+
+import au.edu.uq.rcc.canvas.ROICanvas;
+import java.util.Collection;
 import javafx.beans.property.BooleanProperty;
+import javafx.scene.paint.Color;
 import javax.vecmath.Tuple3i;
 
 /**
  *
  * @author oliver
  */
-public class RenderableROI
+public class RenderableROI implements TrackProvider
 {
     RegionOfInterest roi;
     BooleanProperty isVisible;
     boolean[][] roiMask;
-    Color color = Color.red;
+    Color color = Color.YELLOW;
+    ROICanvas canvas;
+    
 
-    public RenderableROI(RegionOfInterest roi)
+    public RenderableROI(RegionOfInterest roi, ROICanvas canvas) 
     {
         this.roi = roi;
+        this.canvas = canvas;
         roiMask = getROIMask(roi);
     }
     
@@ -36,9 +42,21 @@ public class RenderableROI
         return roi.getRoiMask()[x][y][z];
     }
     
+    @Override
     public String getName()
     {
         return roi.getName();
+    }
+
+    @Override
+    public Collection<Track> getTrackList()
+    {
+        return roi.getTracks();
+    }
+    
+    public int getNumberOfTracks()
+    {
+        return roi.numberOfTracks();
     }
 
     public Color getColor()
@@ -47,8 +65,9 @@ public class RenderableROI
     }
 
     public void setColor(Color color)
-    {
+    {        
         this.color = color;
+        canvas.draw();
     }
 
     public BooleanProperty isVisible()

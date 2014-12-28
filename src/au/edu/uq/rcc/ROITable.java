@@ -52,7 +52,7 @@ public class ROITable
     
     public void populate(File roiDirectory, BrainIndex index)
     {
-        MRISourceCollection sourceCollection = new MRISourceCollection(roiDirectory, index);
+        ROISourceCollection sourceCollection = new ROISourceCollection(roiDirectory, index);
         roiList.addAll(sourceCollection.getROIList());
         tableView.setItems(roiList);
     }

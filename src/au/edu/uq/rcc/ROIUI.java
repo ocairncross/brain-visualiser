@@ -6,9 +6,15 @@
 package au.edu.uq.rcc;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
@@ -50,24 +56,39 @@ public class ROIUI
         pane.getChildren().add(stack);
     }
 
-    public BooleanProperty addSource(RegionOfInterest roi)
+    public BooleanProperty addROI(RenderableROI roi)
     {
         VBox vBox = new VBox();
         HBox hBox = new HBox();
         Label labelSource = new Label();
         Label labelInfo = new Label();
         CheckBox checkBox = new CheckBox();
-
-        vBox.setPadding(new Insets(5.0));
+        ColorPicker colorPicker = new ColorPicker(roi.getColor());
+        // colorPicker.setPromptText(null);
+        colorPicker.getStyleClass().add("button");
+        colorPicker.setStyle("-fx-color-label-visible: false");
+        
+        colorPicker.setMaxSize(18, 18);
+        colorPicker.setMinSize(18, 18);        
+        colorPicker.setPadding(new Insets(-12.0));
+        
+        colorPicker.setOnAction((ActionEvent event) ->
+        {
+            System.out.printf("colour changed %s\n", event.toString());
+            roi.setColor(colorPicker.getValue());
+        });
+        
+        vBox.setPadding(new Insets(3.0));
         vBox.setBorder(border);
 
         labelSource.setText(roi.getName());
         labelSource.setMaxWidth(Double.MAX_VALUE);
 
-        labelInfo.setText("tracks: " + roi.getTracks().size());
+        labelInfo.setText("tracks: " + roi.getNumberOfTracks());
 
-        HBox.setHgrow(labelSource, Priority.ALWAYS);
-        hBox.getChildren().addAll(labelSource, checkBox);
+        HBox.setHgrow(labelSource, Priority.ALWAYS);        
+        hBox.setSpacing(5.0);
+        hBox.getChildren().addAll(labelSource, colorPicker, checkBox);
 
         vBox.getChildren().add(hBox);
         vBox.getChildren().add(labelInfo);

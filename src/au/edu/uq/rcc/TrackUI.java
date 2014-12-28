@@ -27,7 +27,7 @@ import javafx.scene.paint.Color;
  *
  * @author oliver
  */
-public class TrackProviderUI
+public class TrackUI
 {
 
     Pane pane;
@@ -37,7 +37,7 @@ public class TrackProviderUI
     BorderStroke bs = new BorderStroke(Color.GREY, BorderStrokeStyle.SOLID, ci, bw);
     Border border = new Border(bs);
     
-    public TrackProviderUI(Pane pane)
+    public TrackUI(Pane pane)
     {
         this.pane = pane;
         stack = new VBox();

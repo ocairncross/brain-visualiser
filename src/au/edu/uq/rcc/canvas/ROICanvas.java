@@ -3,16 +3,16 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.edu.uq.rcc;
+package au.edu.uq.rcc.canvas;
 
+import au.edu.uq.rcc.FXMLController;
+import au.edu.uq.rcc.RenderableROI;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javax.vecmath.Tuple3i;
 
 /**
@@ -25,25 +25,24 @@ public class ROICanvas
     private int currentSlice;
     private final Canvas canvas;
     private final Pane pane;    
-    private Color color = Color.YELLOW;
     private final CheckBox clipPlane;    
     private final Tuple3i dim;
-    private Set<RenderableROI> roiList = new HashSet<>();
+    private final Set<RenderableROI> roiList = new HashSet<>();
     private GraphicsContext gc;
 
-    public ROICanvas(Pane pane, CheckBox clipPlane, Slider slider, Tuple3i dim)
+    public ROICanvas(FXMLController controler, Tuple3i dim)
     {
-        this.currentSlice = (int) slider.getValue();
-        this.pane = pane;
-        this.clipPlane = clipPlane;
         this.dim = dim;
+        this.currentSlice = (int) controler.getSlider().getValue();
+        this.pane = controler.getStackPane();
+        this.clipPlane = controler.getClipPlane();
         canvas = new Canvas(pane.getWidth(), pane.getHeight());
         gc = canvas.getGraphicsContext2D();
         pane.getChildren().add(canvas);
 
         clipPlane.selectedProperty().addListener((ob, o, n) -> draw());
 
-        slider.valueProperty().addListener((ob, o, n) ->
+        controler.getSlider().valueProperty().addListener((ob, o, n) ->
         {
             if (n.intValue() != currentSlice)
             {
@@ -54,29 +53,20 @@ public class ROICanvas
 
         pane.widthProperty().addListener((ob, o, n) -> draw());
         pane.heightProperty().addListener((ob, o, n) -> draw());
-
     }
     
     public void addROI(RenderableROI roi)
     {        
         roiList.add(roi);
+        draw();
     }
     
     public void removeROI(RenderableROI roi)
     {
         roiList.remove(roi);
-    }
-    
-    public void setColor(Color c)
-    {
-        this.color = c;
-    }
-
-    private void resize(Pane pane)
-    {
         draw();
     }
-
+   
     public final void draw()
     {        
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -108,12 +98,12 @@ public class ROICanvas
     {
         if (renderableROI.isVoxel(i, j, currentSlice))
         {
-            gc.setFill(color);
+            gc.setFill(renderableROI.getColor());
             gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
         }
         else if (!clipPlane.isSelected() && renderableROI.isOutline(i, j))
         {
-            gc.setFill(color.darker());
+            gc.setFill(renderableROI.getColor().darker());
             gc.fillRect((i - 0.5) * scale, (dim.y - (j + 0.5)) * scale, scale, scale);
         }
     }

@@ -3,17 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.edu.uq.rcc;
+package au.edu.uq.rcc.canvas;
 
+import au.edu.uq.rcc.FXMLController;
+import au.edu.uq.rcc.MRISource;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import javax.vecmath.Tuple3i;
 
@@ -21,17 +22,22 @@ import javax.vecmath.Tuple3i;
  *
  * @author oliver
  */
-public class MRICanvas implements ChangeListener<Number>
+public class MRICanvas
 {
 
     private final List<Image> images;    
     private final ImageView imageView;
     private int currentSlice;
     
-    public MRICanvas(MRISource mriSource, ImageView imageView)
+    public MRICanvas(FXMLController controler, MRISource mriSource)
     {
-        Tuple3i dim = mriSource.getDimensions();
-        this.imageView = imageView;        
+        Tuple3i dim = mriSource.getDimensions();        
+        imageView = new ImageView();
+        imageView.setPreserveRatio(true);        
+        imageView.fitHeightProperty().bind(controler.getStackPane().heightProperty());
+        imageView.fitWidthProperty().bind(controler.getStackPane().widthProperty());        
+        controler.getStackPane().getChildren().add(imageView);
+        
         currentSlice = (int) dim.z / 2;
         images = new ArrayList<>(dim.z);        
         for (int k = 0; k < dim.z; k++)
@@ -53,32 +59,22 @@ public class MRICanvas implements ChangeListener<Number>
             }
             images.add(image);
         }
+        
+        controler.getSlider().valueProperty().addListener((ob, o, n) ->
+        {
+            if (n.intValue() != currentSlice)
+            {
+                currentSlice = n.intValue();
+                drawCurrentSlice();                
+            }
+        });
+        
         drawCurrentSlice();
     }
-
-    public int getCurrentSlice()
-    {
-        return currentSlice;
-    }
     
-    public void bindIntegerProperty(DoubleProperty ip)
-    {
-        ip.addListener(this);
-    }
-    
-    public final void drawCurrentSlice()
+    private void drawCurrentSlice()
     {
         imageView.setImage(images.get(currentSlice));
     }
-    
-    @Override
-    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
-    {        
-        if (newValue.intValue() != currentSlice)
-        {            
-            currentSlice = newValue.intValue();
-            drawCurrentSlice();
-        }
-    }
-
+  
 }

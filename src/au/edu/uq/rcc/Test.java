@@ -5,6 +5,7 @@
  */
 package au.edu.uq.rcc;
 
+import au.edu.uq.rcc.manager.TrackManager;
 import java.io.File;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -38,8 +39,8 @@ public class Test extends Application
         TrackCollection trackCollection1 = new TrackCollection(trackSourceFile, transform);
         TrackCollection trackCollection2 = new TrackCollection(mrtrixTrackFile, transform);
         
-        TrackProviderUI testFomat = new TrackProviderUI(root);        
-        TrackSourceManager trackSourceManager = new TrackSourceManager(null, testFomat);
+        TrackUI testFomat = new TrackUI(root);        
+        TrackManager trackSourceManager = new TrackManager(null, testFomat);
         trackSourceManager.addTrackProvider(trackCollection1);
         trackSourceManager.addTrackProvider(trackCollection2);
         

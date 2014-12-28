@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.edu.uq.rcc;
+package au.edu.uq.rcc.manager;
 
+import au.edu.uq.rcc.TrackProvider;
+import au.edu.uq.rcc.TrackUI;
+import au.edu.uq.rcc.canvas.TrackCanvas;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.property.BooleanProperty;
@@ -15,14 +18,14 @@ import javafx.beans.value.ObservableValue;
  *
  * @author oliver
  */
-public class TrackSourceManager implements ChangeListener<Boolean>
+public class TrackManager implements ChangeListener<Boolean>
 {
  
     Map<BooleanProperty, TrackProvider> trackProviders;
     TrackCanvas trackCanvas;
-    TrackProviderUI trackProviderUI;
+    TrackUI trackProviderUI;
     
-    public TrackSourceManager(TrackCanvas trackCanvas, TrackProviderUI trackProviderUI)
+    public TrackManager(TrackCanvas trackCanvas, TrackUI trackProviderUI)
     {
         trackProviders = new HashMap<>();
         this.trackCanvas = trackCanvas;
