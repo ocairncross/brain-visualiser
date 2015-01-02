@@ -13,6 +13,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -55,7 +57,7 @@ public class TrackUI
     }
     
     public void removeSource(TrackProvider trackProvider)
-    {
+    {        
         stack.getChildren().remove(providerMap.get(trackProvider));
     }
 
@@ -63,6 +65,14 @@ public class TrackUI
     {
         VBox vBox = new VBox();
         HBox hBox = new HBox();
+        
+        if (trackProvider instanceof RenderableROI)
+        {
+            BackgroundFill bf = new BackgroundFill(Color.CORAL, ci, Insets.EMPTY);
+            vBox.setBackground(new Background(bf));
+        }
+        
+        
         Label labelSource = new Label();
         Label labelInfo = new Label();
         CheckBox checkBox = new CheckBox();

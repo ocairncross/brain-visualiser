@@ -8,6 +8,8 @@ package au.edu.uq.rcc.manager;
 import au.edu.uq.rcc.TrackProvider;
 import au.edu.uq.rcc.TrackUI;
 import au.edu.uq.rcc.canvas.TrackCanvas;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.property.BooleanProperty;
@@ -20,14 +22,13 @@ import javafx.beans.value.ObservableValue;
  */
 public class TrackManager implements ChangeListener<Boolean>
 {
- 
-    Map<BooleanProperty, TrackProvider> trackProviders;
+    BiMap<BooleanProperty, TrackProvider> biTrackProviders;
     TrackCanvas trackCanvas;
     TrackUI trackProviderUI;
     
     public TrackManager(TrackCanvas trackCanvas, TrackUI trackProviderUI)
-    {
-        trackProviders = new HashMap<>();
+    {        
+        biTrackProviders = HashBiMap.create();
         this.trackCanvas = trackCanvas;
         this.trackProviderUI = trackProviderUI;
     }
@@ -36,12 +37,17 @@ public class TrackManager implements ChangeListener<Boolean>
     {
         BooleanProperty boolProp = trackProviderUI.addSource(trackProvider);
         boolProp.addListener(this);        
-        trackProviders.put(boolProp, trackProvider);
+        biTrackProviders.put(boolProp, trackProvider);
     }
     
     public void removeTrackProvider(TrackProvider trackProvider)
     {
-        trackProviderUI.removeSource(trackProvider);        
+        trackProviderUI.removeSource(trackProvider);       
+        if (trackCanvas != null && biTrackProviders.inverse().get(trackProvider).getValue())
+        {
+            trackCanvas.setTrack(null);
+        }
+        biTrackProviders.inverse().remove(trackProvider);                    
     }
 
     @Override
@@ -49,7 +55,7 @@ public class TrackManager implements ChangeListener<Boolean>
     {        
         if (observable.getValue() == true)
         {     
-            trackProviders.keySet()
+            biTrackProviders.keySet()
                     .stream()
                     .filter(b -> !b.equals(observable) && b.getValue() == true)
                     .forEach(b ->
@@ -60,7 +66,7 @@ public class TrackManager implements ChangeListener<Boolean>
                     });
             if (trackCanvas != null)
             {
-                trackCanvas.setTrack(trackProviders.get(observable));
+                trackCanvas.setTrack(biTrackProviders.get(observable));
             }
         }
         else
