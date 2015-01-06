@@ -5,6 +5,7 @@
  */
 package au.edu.uq.rcc;
 
+import au.edu.uq.rcc.ui.TrackUI;
 import au.edu.uq.rcc.manager.TrackManager;
 import java.io.File;
 import javafx.application.Application;

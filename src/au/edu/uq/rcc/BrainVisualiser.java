@@ -6,6 +6,7 @@
 
 package au.edu.uq.rcc;
 
+import com.sun.glass.ui.Screen;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -27,8 +28,11 @@ public class BrainVisualiser extends Application
         BrainVisualiser.stage = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("FXML.fxml"));        
         primaryStage.setTitle("Brain Trace");
-        Scene scene = new Scene(root, 500, 300);
+        Scene scene = new Scene(root, 1500, 1000);
+        
         primaryStage.setScene(scene);
+        primaryStage.setX(3300);
+        primaryStage.setY(100);        
         primaryStage.show();
     }
 

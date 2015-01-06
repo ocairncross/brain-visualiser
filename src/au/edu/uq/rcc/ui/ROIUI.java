@@ -3,59 +3,33 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package au.edu.uq.rcc;
+package au.edu.uq.rcc.ui;
 
+import au.edu.uq.rcc.RenderableROI;
 import javafx.beans.property.BooleanProperty;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 
 /**
  *
  * @author oliver
  */
-public class ROIUI
+public class ROIUI extends UIGroup
 {
 
-    Pane pane;
-    VBox stack;
-    BorderWidths bw = new BorderWidths(1.0);
-    CornerRadii ci = new CornerRadii(5);
-    BorderStroke bs = new BorderStroke(Color.GREY, BorderStrokeStyle.SOLID, ci, bw);
-    Border border = new Border(bs);
-    
     public ROIUI(Pane pane)
     {
-        this.pane = pane;
-        stack = new VBox();
-        stack.setPadding(new Insets(5.0));
-        stack.setSpacing(3.0);
-        stack.setBorder(border);
-        Label titleLabel = new Label("ROI");
-        titleLabel.setAlignment(Pos.CENTER);        
-        titleLabel.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(titleLabel, Priority.ALWAYS);
-        stack.getChildren().add(titleLabel);
-        pane.getChildren().add(stack);
+        super(pane);
+        titleLabel.setText("Regoin of Interest");
     }
-
+    
     public BooleanProperty addROI(RenderableROI roi)
     {
         VBox vBox = new VBox();

@@ -6,7 +6,7 @@
 package au.edu.uq.rcc.manager;
 
 import au.edu.uq.rcc.TrackProvider;
-import au.edu.uq.rcc.TrackUI;
+import au.edu.uq.rcc.ui.TrackUI;
 import au.edu.uq.rcc.canvas.TrackCanvas;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -35,14 +35,14 @@ public class TrackManager implements ChangeListener<Boolean>
     
     public void addTrackProvider(TrackProvider trackProvider)
     {
-        BooleanProperty boolProp = trackProviderUI.addSource(trackProvider);
+        BooleanProperty boolProp = trackProviderUI.addTrackProvider(trackProvider);
         boolProp.addListener(this);        
         biTrackProviders.put(boolProp, trackProvider);
     }
     
     public void removeTrackProvider(TrackProvider trackProvider)
     {
-        trackProviderUI.removeSource(trackProvider);       
+        trackProviderUI.removeTrackProvider(trackProvider);       
         if (trackCanvas != null && biTrackProviders.inverse().get(trackProvider).getValue())
         {
             trackCanvas.setTrack(null);

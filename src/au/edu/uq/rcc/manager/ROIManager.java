@@ -5,7 +5,7 @@
  */
 package au.edu.uq.rcc.manager;
 
-import au.edu.uq.rcc.ROIUI;
+import au.edu.uq.rcc.ui.ROIUI;
 import au.edu.uq.rcc.RegionOfInterest;
 import au.edu.uq.rcc.RenderableROI;
 import au.edu.uq.rcc.canvas.ROICanvas;

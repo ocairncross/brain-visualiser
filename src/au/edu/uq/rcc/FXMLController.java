@@ -5,12 +5,15 @@
  */
 package au.edu.uq.rcc;
 
+import au.edu.uq.rcc.ui.TrackUI;
+import au.edu.uq.rcc.ui.ROIUI;
 import au.edu.uq.rcc.manager.TrackManager;
 import au.edu.uq.rcc.canvas.TrackCanvas;
 import au.edu.uq.rcc.canvas.ROICanvas;
 import au.edu.uq.rcc.canvas.MRICanvas;
 import au.edu.uq.rcc.index.BrainIndex;
 import au.edu.uq.rcc.manager.ROIManager;
+import au.edu.uq.rcc.ui.ComparatorUI;
 
 import java.io.File;
 import java.net.URL;
@@ -76,8 +79,7 @@ public class FXMLController implements Initializable
         initializeSlider(dim);
 
         stackPane.setOnScroll((ScrollEvent s) ->
-        {
-            System.out.printf("Scroll %s\n", s.toString());
+        {            
             if (s.getDeltaY() < 0)
             {
                 slider.adjustValue(slider.getValue() - 1);
@@ -100,9 +102,10 @@ public class FXMLController implements Initializable
         trackManager.addTrackProvider(tracksAll);
         trackManager.addTrackProvider(tracksMRTRX);
         
+        ComparatorUI comparatorUI = new ComparatorUI(toolPanel);
+       
         
         
-
     }
 
     // Load ROI's from source directory and generate tracks using index.
