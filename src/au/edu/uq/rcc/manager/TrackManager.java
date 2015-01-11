@@ -10,11 +10,12 @@ import au.edu.uq.rcc.ui.TrackUI;
 import au.edu.uq.rcc.canvas.TrackCanvas;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  *
@@ -23,11 +24,13 @@ import javafx.beans.value.ObservableValue;
 public class TrackManager implements ChangeListener<Boolean>
 {
     BiMap<BooleanProperty, TrackProvider> biTrackProviders;
+    ObservableList<TrackProvider> observableTrackProviders;
     TrackCanvas trackCanvas;
     TrackUI trackProviderUI;
     
     public TrackManager(TrackCanvas trackCanvas, TrackUI trackProviderUI)
-    {        
+    {
+        observableTrackProviders = FXCollections.observableArrayList();
         biTrackProviders = HashBiMap.create();
         this.trackCanvas = trackCanvas;
         this.trackProviderUI = trackProviderUI;
@@ -38,6 +41,7 @@ public class TrackManager implements ChangeListener<Boolean>
         BooleanProperty boolProp = trackProviderUI.addTrackProvider(trackProvider);
         boolProp.addListener(this);        
         biTrackProviders.put(boolProp, trackProvider);
+        observableTrackProviders.add(trackProvider);       
     }
     
     public void removeTrackProvider(TrackProvider trackProvider)
@@ -47,7 +51,13 @@ public class TrackManager implements ChangeListener<Boolean>
         {
             trackCanvas.setTrack(null);
         }
-        biTrackProviders.inverse().remove(trackProvider);                    
+        biTrackProviders.inverse().remove(trackProvider);
+        observableTrackProviders.remove(trackProvider);
+    }
+    
+    public ObservableList<TrackProvider> getObservableTrackProviders()
+    {
+        return observableTrackProviders;
     }
 
     @Override

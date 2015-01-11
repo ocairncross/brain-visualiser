@@ -100,4 +100,11 @@ public class RenderableROI implements TrackProvider
         return roiMask;
     }
     
+    
+    @Override
+    public String toString()
+    {
+        return "ROI: " + getName();
+    }
+    
 }

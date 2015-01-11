@@ -5,7 +5,17 @@
  */
 package au.edu.uq.rcc.ui;
 
+import au.edu.uq.rcc.Track;
+import au.edu.uq.rcc.TrackProvider;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Stream;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -19,65 +29,118 @@ import javafx.scene.layout.Priority;
  *
  * @author oliver
  */
-public class ComparatorUI extends UIGroup
+public class ComparatorUI extends UIGroup implements TrackProvider
 {
-    
-    Label label1;
-    Label label2;
-    ComboBox combo1;
-    ComboBox combo2;
+
+    ComboBox<TrackProvider> combo1;
+    ComboBox<TrackProvider> combo2;
+    ComboBox comboOperation;
     GridPane gridPane;
-    
-    ObservableList obList;
-    
+
+    ObservableList<TrackProvider> trackProviders;
 
     public ComparatorUI(Pane pane)
     {
         super(pane);
-        
-        ColumnConstraints cc1 = new ColumnConstraints();        
+
+        ObservableList<String> observableOperations = FXCollections.observableArrayList("src1", "scr2", "union");
+        trackProviders = FXCollections.observableArrayList();
+
+        ColumnConstraints cc1 = new ColumnConstraints();
+        cc1.setHalignment(HPos.RIGHT);
         ColumnConstraints cc2 = new ColumnConstraints();
         cc2.setHgrow(Priority.ALWAYS);
         cc2.setMaxWidth(Double.MAX_VALUE);
-        
+
         HBox hBox = new HBox();
         stack.getChildren().add(hBox);
-        
+
         gridPane = new GridPane();
-        gridPane.setGridLinesVisible(true);
+        // gridPane.setGridLinesVisible(true);
         
-        titleLabel.setText("Comparator");
-        label1 = new Label("src 1:");
-        label2 = new Label("src 2:");
-        combo1 = new ComboBox();
-        combo2 = new ComboBox();
-        
-        // cc1.setMinWidth(label1.getPrefWidth());
-        
-        combo1.setMaxWidth(Double.MAX_VALUE);
-        combo2.setMaxWidth(Double.MAX_VALUE);
-        
-        
-        GridPane.setConstraints(label1, 0, 0);
-        GridPane.setConstraints(label2, 0, 1);
-        GridPane.setConstraints(combo1, 1, 0);
-        GridPane.setConstraints(combo2, 1, 1);
-        GridPane.setMargin(label1, new Insets(0, 10, 0, 0));
-        GridPane.setMargin(label2, new Insets(0, 10, 0, 0));
-        
+        combo1 = createCombo(trackProviders);
+        combo2 = createCombo(trackProviders);
+        comboOperation = createCombo(observableOperations);
+
         gridPane.getColumnConstraints().addAll(cc1, cc2);
+
+        gridPane.add(createLabel("source 1:"), 0, 0);
+        gridPane.add(createLabel("source 2:"), 0, 1);
+        gridPane.add(createLabel("operarion:"), 0, 2);
         
-        gridPane.getChildren().add(label1);
-        gridPane.getChildren().add(label2);
-        gridPane.getChildren().add(combo1);
-        gridPane.getChildren().add(combo2);
-        
-        HBox.setHgrow(gridPane, Priority.ALWAYS);        
+        gridPane.add(combo1, 1, 0);
+        gridPane.add(combo2, 1, 1);
+        gridPane.add(comboOperation, 1, 2);
+
+        HBox.setHgrow(gridPane, Priority.ALWAYS);
         gridPane.setMaxWidth(Double.MAX_VALUE);
         hBox.getChildren().add(gridPane);
-        
+
+    }
+
+    private Label createLabel(String labelText)
+    {
+        final Insets insets = new Insets(0, 10, 0, 0);
+        Label label = new Label(labelText);
+        GridPane.setMargin(label, insets);
+        return label;
+    }
+
+    private ComboBox createCombo(ObservableList obervableList)
+    {
+        ComboBox comboBox = new ComboBox(obervableList);
+        comboBox.setMaxWidth(Double.MAX_VALUE);
+        return comboBox;
+    }
+
+    public void addTrackProviders(ObservableList<TrackProvider> trackProviders)
+    {
+        this.trackProviders = trackProviders;
+        trackProviders.addListener((ListChangeListener.Change<? extends TrackProvider> c) ->
+        {
+            fireChange();
+        });
+        fireChange();
+    }
+
+    private void fireChange()
+    {
+        Stream.of(combo1, combo2).forEach(c ->
+        {
+            c.setItems(trackProviders);
+            if (!trackProviders.contains(c.getValue()))
+            {
+                c.setValue(null);
+            }
+        });
     }
     
+    private Collection<Track> trackList = Collections.EMPTY_LIST;
+
+    @Override
+    public Collection<Track> getTrackList()
+    {
+        return trackList;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "combinator";
+    }
     
-    
+    private class OneSource
+    {
+        
+        TrackProvider trackProvider;
+
+        public OneSource(TrackProvider trackProvider)
+        {
+            this.trackProvider = trackProvider;
+            trackList = trackProvider.getTrackList();
+        }
+        
+        
+    }
+
 }
