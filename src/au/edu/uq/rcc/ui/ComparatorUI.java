@@ -47,6 +47,7 @@ public class ComparatorUI extends UIGroup implements TrackProvider
     public ComparatorUI(Pane pane, TrackManager trackManager)
     {
         super(pane);
+        titleLabel.setText("Track Comparator");
         this.trackManager = trackManager;
 
         ObservableList<String> observableOperations = FXCollections.observableArrayList("src1", "src2", "union");
@@ -62,8 +63,7 @@ public class ComparatorUI extends UIGroup implements TrackProvider
         stack.getChildren().add(hBox);
 
         gridPane = new GridPane();
-        // gridPane.setGridLinesVisible(true);
-
+       
         combo1 = createCombo(trackProviders);
         combo2 = createCombo(trackProviders);
         comboOperation = createCombo(observableOperations);
