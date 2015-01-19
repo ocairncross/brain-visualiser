@@ -90,7 +90,7 @@ public class TrackCanvas
     {
     }
 
-    private void draw()
+    public void draw()
     {
         if (trackProvider != null)
         {

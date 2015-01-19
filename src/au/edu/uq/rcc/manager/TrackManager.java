@@ -10,7 +10,6 @@ import au.edu.uq.rcc.ui.TrackUI;
 import au.edu.uq.rcc.canvas.TrackCanvas;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,9 +38,9 @@ public class TrackManager implements ChangeListener<Boolean>
     public void addTrackProvider(TrackProvider trackProvider)
     {
         BooleanProperty boolProp = trackProviderUI.addTrackProvider(trackProvider);
-        boolProp.addListener(this);        
+        boolProp.addListener(this);
         biTrackProviders.put(boolProp, trackProvider);
-        observableTrackProviders.add(trackProvider);       
+        observableTrackProviders.add(trackProvider);
     }
     
     public void removeTrackProvider(TrackProvider trackProvider)
@@ -86,6 +85,11 @@ public class TrackManager implements ChangeListener<Boolean>
                 trackCanvas.setTrack(null);
             }
         }
+    }
+    
+    public void fireChange()
+    {
+        trackCanvas.draw();
     }
     
     

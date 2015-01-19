@@ -102,7 +102,7 @@ public class FXMLController implements Initializable
         trackManager.addTrackProvider(tracksAll);
         trackManager.addTrackProvider(tracksMRTRX);
         
-        ComparatorUI comparatorUI = new ComparatorUI(toolPanel);
+        ComparatorUI comparatorUI = new ComparatorUI(toolPanel, trackManager);
         comparatorUI.addTrackProviders(trackManager.getObservableTrackProviders());
         
         trackManager.addTrackProvider(comparatorUI);
