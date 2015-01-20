@@ -6,11 +6,13 @@
 
 package au.edu.uq.rcc;
 
-import com.sun.glass.ui.Screen;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -20,8 +22,9 @@ import javafx.stage.Stage;
 public class BrainVisualiser extends Application
 {
     
-    public static Stage stage;
-    
+    public static Stage stage;    
+    public static Pane chartPane = new AnchorPane();
+        
     @Override
     public void start(Stage primaryStage) throws Exception
     {
@@ -34,6 +37,15 @@ public class BrainVisualiser extends Application
         primaryStage.setX(3300);
         primaryStage.setY(100);        
         primaryStage.show();
+        
+        Stage chartStage = new Stage();        
+        Scene chartScene = new Scene(chartPane, 400, 400);
+        chartStage.setScene(chartScene);
+        chartStage.setX(4000);
+        chartStage.setY(200);
+        chartStage.initOwner(stage);
+        chartStage.show();
+        
     }
 
     /**

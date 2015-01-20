@@ -99,8 +99,12 @@ public class RenderableROI implements TrackProvider
         }
         return roiMask;
     }
-    
-    
+
+    public RegionOfInterest getRoi()
+    {
+        return roi;
+    }
+        
     @Override
     public String toString()
     {

@@ -17,6 +17,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.CheckBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 import javax.vecmath.Tuple3d;
 import javax.vecmath.Tuple3i;
 import javax.vecmath.Vector3d;
@@ -33,18 +34,16 @@ public class TrackCanvas
     private final Vector3d unitY = new Vector3d(0.0, 1.0, 0.0);
     private final Vector3d unitZ = new Vector3d(0.0, 0.0, 1.0);
 
-    // TrackCollection trackList;
     private int currentSlice;
     private final Canvas canvas;
     private final Pane pane;
     private final CheckBox clipPlane;
     private double scale = 1.0;
     private final Tuple3i dim;
-
     private TrackProvider trackProvider = null;
+    private boolean glow = false;
 
-    // private List<Track> trackList = null;    
-    // private List<PartitionedTrack> partitionedTrackList = null;
+
     public TrackCanvas(FXMLController controler, Tuple3i dim)
     {
         this.dim = dim;
@@ -76,7 +75,7 @@ public class TrackCanvas
     }
 
     private void bind(ObservableValue observable)
-    {
+    {        
         observable.addListener((ob, o, n) -> resize(pane));
     }
 
@@ -101,6 +100,11 @@ public class TrackCanvas
         }
     }
 
+    public void setGlow(boolean glow)
+    {
+        this.glow = glow;
+    }
+    
     public void drawTestPattern()
     {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -202,8 +206,15 @@ public class TrackCanvas
         double norm = FastMath.sqrt((x * x) + (y * y) + (z * z));       
         x /= norm;
         y /= norm;
-        z /= norm;               
-        return new Color(FastMath.abs(x), FastMath.abs(y), FastMath.abs(z), 1.0);
+        z /= norm;
+        
+        Color c = new Color(FastMath.abs(x), FastMath.abs(y), FastMath.abs(z), 1.0);
+        if (glow)
+        {
+            c = Color.AZURE;
+        }
+        return c;
+        
     }
 
 }

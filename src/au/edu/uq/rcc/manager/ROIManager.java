@@ -9,7 +9,9 @@ import au.edu.uq.rcc.ui.ROIUI;
 import au.edu.uq.rcc.RegionOfInterest;
 import au.edu.uq.rcc.RenderableROI;
 import au.edu.uq.rcc.canvas.ROICanvas;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -69,7 +71,33 @@ public class ROIManager implements ChangeListener<Boolean>
         }
     }
     
+    public Collection<RenderableROI> getROIs()
+    {
+        return renderableROIs.values();
+    }
     
+    public void setSelectedROIs(List<RenderableROI> roiSet)
+    {        
+        renderableROIs.keySet().forEach((BooleanProperty b) ->
+        {
+            RenderableROI r = renderableROIs.get(b);
+            if(roiSet.contains(r))
+            {
+               if (b.get() == false) 
+               {
+                   b.set(true);                   
+               }               
+            }
+            else
+            {
+                if(b.get() == true)
+                {
+                    b.set(false);
+                }
+            }
+        });
+        
+    }
     
     
 }

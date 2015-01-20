@@ -14,6 +14,7 @@ import au.edu.uq.rcc.canvas.MRICanvas;
 import au.edu.uq.rcc.index.BrainIndex;
 import au.edu.uq.rcc.manager.ROIManager;
 import au.edu.uq.rcc.ui.ComparatorUI;
+import au.edu.uq.rcc.ui.ROITrackSelectorUI;
 
 import java.io.File;
 import java.net.URL;
@@ -37,6 +38,7 @@ import org.apache.commons.math3.util.FastMath;
 public class FXMLController implements Initializable
 {
 
+    public static TrackCanvas trackHiTrackCanvas;
     public static int DISPLAY_MAX_TRACKS = 1000;
 
     File root = new File("/media/oliver/A066DA6266DA392C/projects/brain/human/NC001");
@@ -94,7 +96,9 @@ public class FXMLController implements Initializable
 
         TrackCanvas trackCanvas = new TrackCanvas(this, dim);
         TrackUI trackUI = new TrackUI(toolPanel);
-
+        
+        trackHiTrackCanvas = new TrackCanvas(this, dim);
+        
         TrackManager trackManager = new TrackManager(trackCanvas, trackUI);
         roiManager.setTrackManager(trackManager);
         
@@ -102,9 +106,11 @@ public class FXMLController implements Initializable
         trackManager.addTrackProvider(tracksAll);
         trackManager.addTrackProvider(tracksMRTRX);
         
-        ComparatorUI comparatorUI = new ComparatorUI(toolPanel, trackManager);
-        comparatorUI.addTrackProviders(trackManager.getObservableTrackProviders());
+        ROITrackSelectorUI selctorUI = new ROITrackSelectorUI(toolPanel, roiManager, trackManager);
+        trackManager.addTrackProvider(selctorUI);
         
+        ComparatorUI comparatorUI = new ComparatorUI(toolPanel, trackManager);
+        comparatorUI.addTrackProviders(trackManager.getObservableTrackProviders());        
         trackManager.addTrackProvider(comparatorUI);
         
         

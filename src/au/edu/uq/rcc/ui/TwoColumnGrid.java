@@ -5,9 +5,12 @@
  */
 package au.edu.uq.rcc.ui;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -20,49 +23,51 @@ import javafx.scene.layout.Priority;
  */
 public class TwoColumnGrid
 {
-    
+
     int currnentRow = 0;
     GridPane gridPane = new GridPane();
 
     public TwoColumnGrid()
     {
         gridPane = new GridPane();
-        
+
         ColumnConstraints cc1 = new ColumnConstraints();
         cc1.setHalignment(HPos.RIGHT);
         ColumnConstraints cc2 = new ColumnConstraints();
         cc2.setHgrow(Priority.ALWAYS);
         cc2.setMaxWidth(Double.MAX_VALUE);
-        
+
         HBox hBox = new HBox();
-        
+
         gridPane.getColumnConstraints().addAll(cc1, cc2);
         HBox.setHgrow(gridPane, Priority.ALWAYS);
         gridPane.setMaxWidth(Double.MAX_VALUE);
         hBox.getChildren().add(gridPane);
-        
+
     }
-    
+
     public void addRow(String label, Node control)
     {
-        gridPane.add(createLabel(label) , 0, currnentRow);
+        if (control instanceof Control)
+        {
+            ((Control) control).setMaxWidth(Double.MAX_VALUE);
+        }        
+        gridPane.add(createLabel(label), 0, currnentRow);
         gridPane.add(control, 1, currnentRow);
         currnentRow++;
     }
-    
-    private Label createLabel(String labelText)
+
+    private Label createLabel(final String labelText)
     {
         final Insets insets = new Insets(0, 10, 0, 0);
         Label label = new Label(labelText);
         GridPane.setMargin(label, insets);
         return label;
     }
-    
+
     public Node getGrid()
     {
         return gridPane;
     }
-    
-    
-    
+
 }

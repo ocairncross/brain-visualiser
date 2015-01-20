@@ -8,6 +8,7 @@ package au.edu.uq.rcc.manager;
 import au.edu.uq.rcc.TrackProvider;
 import au.edu.uq.rcc.ui.TrackUI;
 import au.edu.uq.rcc.canvas.TrackCanvas;
+import au.edu.uq.rcc.ui.TrackChart;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import javafx.beans.property.BooleanProperty;
@@ -76,6 +77,8 @@ public class TrackManager implements ChangeListener<Boolean>
             if (trackCanvas != null)
             {
                 trackCanvas.setTrack(biTrackProviders.get(observable));
+                TrackChart tc = new TrackChart(biTrackProviders.get(observable));
+                tc.plotChart();
             }
         }
         else
@@ -88,7 +91,7 @@ public class TrackManager implements ChangeListener<Boolean>
     }
     
     public void fireChange()
-    {
+    {        
         trackCanvas.draw();
     }
     

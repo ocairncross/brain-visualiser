@@ -19,15 +19,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 
 /**
  *
@@ -53,55 +47,27 @@ public class ComparatorUI extends UIGroup implements TrackProvider
         ObservableList<String> observableOperations = FXCollections.observableArrayList("src1", "src2", "union");
         trackProviders = FXCollections.observableArrayList();
 
-        ColumnConstraints cc1 = new ColumnConstraints();
-        cc1.setHalignment(HPos.RIGHT);
-        ColumnConstraints cc2 = new ColumnConstraints();
-        cc2.setHgrow(Priority.ALWAYS);
-        cc2.setMaxWidth(Double.MAX_VALUE);
-
-        HBox hBox = new HBox();
-        stack.getChildren().add(hBox);
-
-        gridPane = new GridPane();
-       
         combo1 = createCombo(trackProviders);
         combo2 = createCombo(trackProviders);
         comboOperation = createCombo(observableOperations);
         comboOperation.setValue("src1");
 
-        gridPane.getColumnConstraints().addAll(cc1, cc2);
-
-        gridPane.add(createLabel("source 1:"), 0, 0);
-        gridPane.add(createLabel("source 2:"), 0, 1);
-        gridPane.add(createLabel("operarion:"), 0, 2);
-
-        gridPane.add(combo1, 1, 0);
-        gridPane.add(combo2, 1, 1);
-        gridPane.add(comboOperation, 1, 2);
-
-        HBox.setHgrow(gridPane, Priority.ALWAYS);
-        gridPane.setMaxWidth(Double.MAX_VALUE);
-        hBox.getChildren().add(gridPane);
+        TwoColumnGrid tcg = new TwoColumnGrid();
+        tcg.addRow("source 1:", combo1);
+        tcg.addRow("source 2:", combo2);
+        tcg.addRow("operation:", comboOperation);
         
         Comparator comparator = new Comparator(comboOperation.valueProperty(), 
                 combo1.valueProperty(), 
                 combo2.valueProperty()
         );
 
-    }
-
-    private Label createLabel(String labelText)
-    {
-        final Insets insets = new Insets(0, 10, 0, 0);
-        Label label = new Label(labelText);
-        GridPane.setMargin(label, insets);
-        return label;
+        stack.getChildren().add(tcg.getGrid());
     }
 
     private ComboBox createCombo(ObservableList obervableList)
     {
-        ComboBox comboBox = new ComboBox(obervableList);
-        comboBox.setMaxWidth(Double.MAX_VALUE);        
+        ComboBox comboBox = new ComboBox(obervableList);        
         return comboBox;
     }
 
@@ -138,7 +104,7 @@ public class ComparatorUI extends UIGroup implements TrackProvider
     @Override
     public String getName()
     {
-        return "combinator";
+        return "Track Comparator";
     }
 
     private class Comparator
