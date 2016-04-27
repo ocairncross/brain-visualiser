@@ -34,15 +34,15 @@ public class BrainVisualiser extends Application
         Scene scene = new Scene(root, 1500, 1000);
         
         primaryStage.setScene(scene);
-        primaryStage.setX(3300);
-        primaryStage.setY(100);        
+        //primaryStage.setX(3300);
+        //primaryStage.setY(100);        
         primaryStage.show();
         
         Stage chartStage = new Stage();        
         Scene chartScene = new Scene(chartPane, 400, 400);
         chartStage.setScene(chartScene);
-        chartStage.setX(4000);
-        chartStage.setY(200);
+        //chartStage.setX(4000);
+        //chartStage.setY(200);
         chartStage.initOwner(stage);
         chartStage.show();
         
